@@ -1,0 +1,12 @@
+name: emotion-classifier
+
+python_env: python_env.yaml
+
+entry_points:
+  train:
+    command: "python train.py"
+
+  predict:
+    parameters:
+      text: {type: str, default: "I feel great today!"}
+    command: "python predict.py --text '{text}'"

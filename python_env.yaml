@@ -1,0 +1,8 @@
+python: "3.10"
+build_dependencies:
+  - pip
+dependencies:
+  - mlflow>=3.0
+  - scikit-learn
+  - datasets
+  - pandas
