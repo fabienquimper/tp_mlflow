@@ -14,7 +14,7 @@ Classifieur d'émotions (texte → `happy` / `sad` / `angry`) pour illustrer un 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate        # Windows : .venv\Scripts\activate
-pip install mlflow scikit-learn datasets
+pip install mlflow scikit-learn datasets fastapi uvicorn
 ```
 
 ---
@@ -57,16 +57,37 @@ enregistre le modèle dans le **Model Registry** et le promeut sous l'alias `@ch
 # Mode direct — charge le modèle depuis le registry local
 python predict.py
 python predict.py --text "I feel amazing!"
-
-# Mode API REST — simule un vrai appel client
-# Terminal A : démarrer le serveur
-mlflow models serve -m "models:/emotion-classifier@champion" -p 5001 --no-conda
-# Terminal B : appeler l'API
-python predict.py --api --text "This makes me furious!"
-curl -X POST http://localhost:5001/invocations \
-     -H "Content-Type: application/json" \
-     -d '{"inputs": ["Best day ever!", "I am furious!", "I miss you"]}'
 ```
+
+### 4. Déployer l'API avec interface graphique (recommandé)
+
+```bash
+python app.py
+```
+
+Ouvre **http://localhost:5002/docs** — Swagger UI complet avec champs de saisie.
+
+Ou en ligne de commande :
+```bash
+curl -X POST http://localhost:5002/predict \
+     -H "Content-Type: application/json" \
+     -d '{"texts": ["Best day ever!", "I am furious!", "I miss you"]}'
+```
+
+Réponse :
+```json
+{
+  "model_version": "v9 (@champion)",
+  "predictions": [
+    {"text": "Best day ever!", "emotion": "happy", "confidence": {"angry": 0.27, "happy": 0.44, "sad": 0.29}},
+    {"text": "I am furious!",  "emotion": "angry", "confidence": {"angry": 0.59, "happy": 0.21, "sad": 0.20}},
+    {"text": "I miss you",     "emotion": "sad",   "confidence": {"angry": 0.24, "happy": 0.33, "sad": 0.43}}
+  ]
+}
+```
+
+> `mlflow models serve` reste disponible sur le port 5001 (voir `predict.py --api`),
+> mais son Swagger UI ne permet pas de saisir les données — préférer `app.py`.
 
 ---
 
@@ -104,7 +125,8 @@ L'UI **ne prédit pas** — elle observe et compare. Onglets utiles pour ce TP :
 ├── MLproject        # Entry points mlflow run
 ├── python_env.yaml  # Dépendances
 ├── train.py         # Entraînement — options : --mode 1 / 2 / 3
-└── predict.py       # Prédiction — options : --text, --api, --port
+├── predict.py       # Prédiction CLI — options : --text, --api, --port
+└── app.py           # API FastAPI custom — Swagger UI sur :5002/docs
 ```
 
 ## Pour aller plus loin
